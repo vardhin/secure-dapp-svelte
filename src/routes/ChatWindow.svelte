@@ -64,6 +64,9 @@
         if (contactName) {
             fetchData();
         }
+        return () => {
+            if (stopListening) stopListening();
+        };
     });
 
     const handleSendMessage = async (e) => {
