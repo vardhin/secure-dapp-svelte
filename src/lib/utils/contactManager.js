@@ -134,3 +134,98 @@ export const getAllContacts = async () => {
     return [];
   }
 };
+
+// Update message acknowledgment in history.json
+export const updateMessageAcknowledgment = async (name, msgID, acknowledgment) => {
+  try {
+    const contactHistoryPath = `${basePath}${name}/history.json`;
+
+    let history = [];
+
+    try {
+      const result = await Filesystem.readFile({
+        path: contactHistoryPath,
+        directory: Directory.Documents,
+        encoding: Encoding.UTF8,
+      });
+      history = JSON.parse(result.data);
+    } catch (error) {
+      console.log("No existing history. Creating new history.");
+    }
+
+    history = history.map((msg) => 
+      msg.msgID === msgID ? { ...msg, acknowledgment } : msg
+    );
+
+    await Filesystem.writeFile({
+      path: contactHistoryPath,
+      data: JSON.stringify(history),
+      directory: Directory.Documents,
+      encoding: Encoding.UTF8,
+    });
+
+    console.log("Message acknowledgment updated!");
+  } catch (error) {
+    console.error("Error updating message acknowledgment:", error);
+  }
+};
+
+// Delete a message from history.json
+export const deleteMessageFromHistory = async (name, msgID) => {
+  try {
+    const contactHistoryPath = `${basePath}${name}/history.json`;
+
+    let history = [];
+
+    try {
+      const result = await Filesystem.readFile({
+        path: contactHistoryPath,
+        directory: Directory.Documents,
+        encoding: Encoding.UTF8,
+      });
+      history = JSON.parse(result.data);
+    } catch (error) {
+      console.log("No existing history. Creating new history.");
+    }
+
+    history = history.filter((msg) => msg.msgID !== msgID);
+
+    await Filesystem.writeFile({
+      path: contactHistoryPath,
+      data: JSON.stringify(history),
+      directory: Directory.Documents,
+      encoding: Encoding.UTF8,
+    });
+
+    console.log("Message deleted from history!");
+  } catch (error) {
+    console.error("Error deleting message from history:", error);
+  }
+};
+
+// Update contact status in contact_details.json
+export const updateContactStatus = async (name, isOnline, timestamp) => {
+  try {
+    const contactDetailsPath = `${basePath}${name}/contact_details.json`;
+
+    const result = await Filesystem.readFile({
+      path: contactDetailsPath,
+      directory: Directory.Documents,
+      encoding: Encoding.UTF8,
+    });
+
+    let contactDetails = JSON.parse(result.data);
+    contactDetails = { ...contactDetails, isOnline, lastSeen: timestamp };
+
+    await Filesystem.writeFile({
+      path: contactDetailsPath,
+      data: JSON.stringify(contactDetails),
+      directory: Directory.Documents,
+      encoding: Encoding.UTF8,
+    });
+
+    console.log("Contact status updated!");
+  } catch (error) {
+    console.error("Error updating contact status:", error);
+  }
+};
